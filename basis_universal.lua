@@ -35,6 +35,7 @@ files {
   "transcoder/**.cpp",
   "*.h",
   "*.cpp",
+  "*.c",
 }
 
 excludes {
