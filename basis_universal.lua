@@ -62,13 +62,6 @@ if (_PLATFORM_WINDOWS) then
     "_ITERATOR_DEBUG_LEVEL=2",
   }
 
-  files {
-  }
-  excludes {
-  }
-
-
-
   -- -------------------------------------------------------------
   -- configuration { "windows", "Debug", "x32" }
   -- -------------------------------------------------------------
