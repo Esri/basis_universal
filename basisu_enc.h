@@ -16,7 +16,7 @@
 #include "transcoder/basisu.h"
 #include "transcoder/basisu_transcoder_internal.h"
 
-#include <ctype.h>
+#include <cctype>
 #include <mutex>
 #include <atomic>
 #include <condition_variable>
