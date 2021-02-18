@@ -514,6 +514,10 @@ if (_PLATFORM_WINUWP) then
       "/AI\"$(WindowsSDK_UnionMetadataPath)\"",
     }
 
+    defines {
+      "_ITERATOR_DEBUG_LEVEL=2",
+    }
+
     files {
     }
     excludes {
