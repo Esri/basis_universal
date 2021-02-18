@@ -39,7 +39,6 @@ files {
 }
 
 excludes {
-  "i3s-lib/src/dllmain.cpp",
 }
 
 includedirs {
