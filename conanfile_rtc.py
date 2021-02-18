@@ -3,9 +3,9 @@ from conans import ConanFile
 
 class BasisUniversalConan(ConanFile):
     name = "basis_universal"
-    version = "0.1"
+    version = "v1.12"
     url = "https://devtopia.esri.com/3rdparty/basis_universal/tree/runtimecore"
-    license = "esri"
+    license = "https://github.com/Esri/basis_universal/blob/master/LICENSE"
     description = "Basis Universal for Scene Layer Library."
 
     # RTC specific triple
