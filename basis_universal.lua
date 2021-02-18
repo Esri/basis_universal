@@ -18,15 +18,6 @@ uuid "E2587158-A6F8-4BF3-9A7D-9CB1C2F0A5FE"
 flags {
   "NoPCH"
 }
-if not (_PLATFORM_WINDOWS or _PLATFORM_WINUWP) then
-  buildoptions {
-    "-Wall",
-    "-Wno-reorder",
-    "-Wno-unknown-pragmas",
-    "-Wno-undefined-inline",
-    "-Wno-unused-variable",
-  }
-end
 
 files {
   "encoder/**.h",
@@ -68,17 +59,12 @@ if (_PLATFORM_WINDOWS) then
   configuration { "windows" }
 
   defines {
-    "_PPLTASK_ASYNC_LOGGING=0",
+    "_ITERATOR_DEBUG_LEVEL=2",
   }
 
   files {
-    -- "src/utils/win/utl_mem_mapped_winos.*",
-    -- "src/utils/win/utl_shared_read_only_file_winos.*",
-    -- "src/utils/win/scene_layer_lib.rc",
   }
   excludes {
-    -- "src/utils/*_posix.h" ,
-    -- "src/utils/*_posix.cpp",
   }
 
 
@@ -136,8 +122,6 @@ end
 
 if not (_PLATFORM_WINDOWS or _PLATFORM_WINUWP) then
   files {
-    -- "src/utils/*_posix.h" ,
-    -- "src/utils/*_posix.cpp",
   }
 end
 
@@ -531,13 +515,8 @@ if (_PLATFORM_WINUWP) then
     }
 
     files {
-      -- "src/utils/win/utl_mem_mapped_winos.*",
-      -- "src/utils/win/utl_shared_read_only_file_winos.*",
-      -- "src/utils/win/scene_layer_lib.rc",
     }
     excludes {
-      -- "src/utils/*_posix.h" ,
-      -- "src/utils/*_posix.cpp",
     }
 
   -- -------------------------------------------------------------
