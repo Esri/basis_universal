@@ -499,14 +499,6 @@ if (_PLATFORM_WINUWP) then
 
   configuration { "windows" }
 
-    buildoptions {
-      "/sdl",
-      "/ZW",
-      "/EHsc",
-      "/AI\"$(VCIDEInstallDir)vcpackages\"",
-      "/AI\"$(WindowsSDK_UnionMetadataPath)\"",
-    }
-
     defines {
       "_ITERATOR_DEBUG_LEVEL=2",
     }
