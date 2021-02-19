@@ -29,15 +29,9 @@ files {
   "*.c",
 }
 
-excludes {
-}
-
 includedirs {
   "encoder",
   "transcoder",
-}
-
-defines {
 }
 
 -- @see end of script to disable warnings
