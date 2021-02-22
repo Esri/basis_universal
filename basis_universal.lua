@@ -34,6 +34,10 @@ includedirs {
   "transcoder",
 }
 
+defines {
+  "BASISU_NO_ITERATOR_DEBUG_LEVEL",
+}
+
 -- @see end of script to disable warnings
 -- -------------------------------------------------------------
 -- configurations
@@ -51,10 +55,6 @@ if (_PLATFORM_WINDOWS) then
   -- project specific configuration settings
 
   configuration { "windows" }
-
-  defines {
-    "_ITERATOR_DEBUG_LEVEL=2",
-  }
 
   -- -------------------------------------------------------------
   -- configuration { "windows", "Debug", "x32" }
