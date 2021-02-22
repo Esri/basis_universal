@@ -493,15 +493,6 @@ if (_PLATFORM_WINUWP) then
 
   configuration { "windows" }
 
-    defines {
-      "_ITERATOR_DEBUG_LEVEL=2",
-    }
-
-    files {
-    }
-    excludes {
-    }
-
   -- -------------------------------------------------------------
   -- configuration { "winuwp_debug", "x32" }
   -- -------------------------------------------------------------
