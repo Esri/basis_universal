@@ -2776,6 +2776,7 @@ static int main_internal(int argc, const char **argv)
 	return status ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+#ifdef BASISU_UTILITY_BUILD
 int main(int argc, const char** argv)
 {
 #ifdef _DEBUG
@@ -2803,3 +2804,4 @@ int main(int argc, const char** argv)
 
 	return status;
 }
+#endif
