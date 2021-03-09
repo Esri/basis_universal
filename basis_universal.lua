@@ -19,6 +19,10 @@ flags {
   "NoPCH"
 }
 
+excludes {
+  "basisu_tool.cpp"
+}
+
 files {
   "encoder/**.h",
   "encoder/**.cpp",
