@@ -24,8 +24,6 @@ excludes {
 }
 
 files {
-  "encoder/**.h",
-  "encoder/**.cpp",
   "transcoder/**.h",
   "transcoder/**.cpp",
   "*.h",
@@ -34,7 +32,6 @@ files {
 }
 
 includedirs {
-  "encoder",
   "transcoder",
 }
 
