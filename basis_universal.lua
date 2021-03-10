@@ -19,9 +19,11 @@ flags {
   "NoPCH"
 }
 
+excludes {
+  "basisu_tool.cpp"
+}
+
 files {
-  "encoder/**.h",
-  "encoder/**.cpp",
   "transcoder/**.h",
   "transcoder/**.cpp",
   "*.h",
@@ -30,7 +32,6 @@ files {
 }
 
 includedirs {
-  "encoder",
   "transcoder",
 }
 
