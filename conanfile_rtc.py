@@ -16,7 +16,7 @@ class BasisUniversalConan(ConanFile):
         relative = "3rdparty/basis_universal/"
 
         # headers
-        self.copy("*.h*", src=base + "encoder", dst=relative + "encoder")
+        self.copy("*.h*", src=base, dst=relative)
         self.copy("*.h*", src=base + "transcoder", dst=relative + "transcoder")
  
         # libraries
