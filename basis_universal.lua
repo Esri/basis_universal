@@ -19,8 +19,15 @@ files {
   "*.c",
   "*.cpp",
 
+  "encoder/**.h",
+  "encoder/**.cpp",
+  "encoder/**.c",
+
   "transcoder/**.h",
   "transcoder/**.cpp",
+
+  "zstd/**.h",
+  "zstd/zstd.c",
 }
 
 excludes {
