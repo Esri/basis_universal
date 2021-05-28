@@ -1,5 +1,5 @@
 // basisu_transcoder_internal.h - Universal texture format transcoder library.
-// Copyright (C) 2019-2021 Binomial LLC. All Rights Reserved.
+// Copyright (C) 2019-2020 Binomial LLC. All Rights Reserved.
 //
 // Important: If compiling with gcc, be sure strict aliasing is disabled: -fno-strict-aliasing
 //
@@ -20,8 +20,8 @@
 #pragma warning (disable: 4127) //  conditional expression is constant
 #endif
 
-#define BASISD_LIB_VERSION 115
-#define BASISD_VERSION_STRING "01.15"
+#define BASISD_LIB_VERSION 112
+#define BASISD_VERSION_STRING "01.12"
 
 #ifdef _DEBUG
 #define BASISD_BUILD_DEBUG
@@ -122,7 +122,7 @@ namespace basist
 			basisu::clear_vector(m_tree);
 		}
 
-		bool init(uint32_t total_syms, const uint8_t *pCode_sizes, uint32_t fast_lookup_bits = basisu::cHuffmanFastLookupBits)
+		bool init(uint32_t total_syms, const uint8_t *pCode_sizes)
 		{
 			if (!total_syms)
 			{
@@ -133,10 +133,8 @@ namespace basist
 			m_code_sizes.resize(total_syms);
 			memcpy(&m_code_sizes[0], pCode_sizes, total_syms);
 
-			const uint32_t huffman_fast_lookup_size = 1 << fast_lookup_bits;
-
 			m_lookup.resize(0);
-			m_lookup.resize(huffman_fast_lookup_size);
+			m_lookup.resize(basisu::cHuffmanFastLookupSize);
 
 			m_tree.resize(0);
 			m_tree.resize(total_syms * 2);
@@ -174,10 +172,10 @@ namespace basist
 				for (l = code_size; l > 0; l--, cur_code >>= 1)
 					rev_code = (rev_code << 1) | (cur_code & 1);
 
-				if (code_size <= fast_lookup_bits)
+				if (code_size <= basisu::cHuffmanFastLookupBits)
 				{
 					uint32_t k = (code_size << 16) | sym_index;
-					while (rev_code < huffman_fast_lookup_size)
+					while (rev_code < basisu::cHuffmanFastLookupSize)
 					{
 						if (m_lookup[rev_code] != 0)
 						{
@@ -192,9 +190,9 @@ namespace basist
 				}
 
 				int tree_cur;
-				if (0 == (tree_cur = m_lookup[rev_code & (huffman_fast_lookup_size - 1)]))
+				if (0 == (tree_cur = m_lookup[rev_code & (basisu::cHuffmanFastLookupSize - 1)]))
 				{
-					const uint32_t idx = rev_code & (huffman_fast_lookup_size - 1);
+					const uint32_t idx = rev_code & (basisu::cHuffmanFastLookupSize - 1);
 					if (m_lookup[idx] != 0)
 					{
 						// Supplied codesizes can't create a valid prefix code.
@@ -212,9 +210,9 @@ namespace basist
 					return false;
 				}
 
-				rev_code >>= (fast_lookup_bits - 1);
+				rev_code >>= (basisu::cHuffmanFastLookupBits - 1);
 
-				for (int j = code_size; j > ((int)fast_lookup_bits + 1); j--)
+				for (int j = code_size; j > (basisu::cHuffmanFastLookupBits + 1); j--)
 				{
 					tree_cur -= ((rev_code >>= 1) & 1);
 
@@ -262,8 +260,6 @@ namespace basist
 		}
 
 		const basisu::uint8_vec &get_code_sizes() const { return m_code_sizes; }
-		const basisu::int_vec get_lookup() const { return m_lookup; }
-		const basisu::int16_vec get_tree() const { return m_tree; }
 
 		bool is_valid() const { return m_code_sizes.size() > 0; }
 
@@ -440,11 +436,9 @@ namespace basist
 			return v;
 		}
 
-		inline uint32_t decode_huffman(const huffman_decoding_table &ct, int fast_lookup_bits = basisu::cHuffmanFastLookupBits)
+		inline uint32_t decode_huffman(const huffman_decoding_table &ct)
 		{
 			assert(ct.m_code_sizes.size());
-
-			const uint32_t huffman_fast_lookup_size = 1 << fast_lookup_bits;
 						
 			while (m_bit_buf_size < 16)
 			{
@@ -460,14 +454,14 @@ namespace basist
 			int code_len;
 
 			int sym;
-			if ((sym = ct.m_lookup[m_bit_buf & (huffman_fast_lookup_size - 1)]) >= 0)
+			if ((sym = ct.m_lookup[m_bit_buf & (basisu::cHuffmanFastLookupSize - 1)]) >= 0)
 			{
 				code_len = sym >> 16;
 				sym &= 0xFFFF;
 			}
 			else
 			{
-				code_len = fast_lookup_bits;
+				code_len = basisu::cHuffmanFastLookupBits;
 				do
 				{
 					sym = ct.m_tree[~sym + ((m_bit_buf >> code_len++) & 1)]; // ~sym = -sym - 1
@@ -686,19 +680,14 @@ namespace basist
 
 		bool operator== (const color32&rhs) const { return m == rhs.m; }
 
-		static color32 comp_min(const color32& a, const color32& b) { return color32(cNoClamp, basisu::minimum(a[0], b[0]), basisu::minimum(a[1], b[1]), basisu::minimum(a[2], b[2]), basisu::minimum(a[3], b[3])); }
-		static color32 comp_max(const color32& a, const color32& b) { return color32(cNoClamp, basisu::maximum(a[0], b[0]), basisu::maximum(a[1], b[1]), basisu::maximum(a[2], b[2]), basisu::maximum(a[3], b[3])); }
+		static color32 comp_min(const color32& a, const color32& b) { return color32(cNoClamp, std::min(a[0], b[0]), std::min(a[1], b[1]), std::min(a[2], b[2]), std::min(a[3], b[3])); }
+		static color32 comp_max(const color32& a, const color32& b) { return color32(cNoClamp, std::max(a[0], b[0]), std::max(a[1], b[1]), std::max(a[2], b[2]), std::max(a[3], b[3])); }
 	};
 
 	struct endpoint
 	{
 		color32 m_color5;
 		uint8_t m_inten5;
-		bool operator== (const endpoint& rhs) const
-		{
-			return (m_color5.r == rhs.m_color5.r) && (m_color5.g == rhs.m_color5.g) && (m_color5.b == rhs.m_color5.b) && (m_inten5 == rhs.m_inten5);
-		}
-		bool operator!= (const endpoint& rhs) const { return !(*this == rhs); }
 	};
 
 	struct selector
@@ -711,17 +700,6 @@ namespace basist
 
 		uint8_t m_lo_selector, m_hi_selector;
 		uint8_t m_num_unique_selectors;
-		bool operator== (const selector& rhs) const
-		{
-			return (m_selectors[0] == rhs.m_selectors[0]) &&
-				(m_selectors[1] == rhs.m_selectors[1]) &&
-				(m_selectors[2] == rhs.m_selectors[2]) &&
-				(m_selectors[3] == rhs.m_selectors[3]);
-		}
-		bool operator!= (const selector& rhs) const
-		{
-			return !(*this == rhs);
-		}
 
 		void init_flags()
 		{
