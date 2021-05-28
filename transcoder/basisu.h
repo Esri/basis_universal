@@ -1,5 +1,5 @@
 // basisu.h
-// Copyright (C) 2019-2021 Binomial LLC. All Rights Reserved.
+// Copyright (C) 2019-2020 Binomial LLC. All Rights Reserved.
 // Important: If compiling with gcc, be sure strict aliasing is disabled: -fno-strict-aliasing
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,6 +41,10 @@
 			#endif
 		#endif // defined(_DEBUG) || defined(DEBUG)
 
+		#ifndef NOMINMAX
+			#define NOMINMAX
+		#endif
+
 	#endif // BASISU_NO_ITERATOR_DEBUG_LEVEL
 
 #endif // _MSC_VER
@@ -59,10 +63,9 @@
 #include <functional>
 #include <iterator>
 #include <type_traits>
+#include <vector>
 #include <assert.h>
 #include <random>
-
-#include "basisu_containers.h"
 
 #ifdef max
 #undef max
@@ -85,7 +88,7 @@
 #define BASISU_ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
 #define BASISU_NO_EQUALS_OR_COPY_CONSTRUCT(x) x(const x &) = delete; x& operator= (const x &) = delete;
 #define BASISU_ASSUME(x) static_assert(x, #x);
-#define BASISU_OFFSETOF(s, m) offsetof(s, m)
+#define BASISU_OFFSETOF(s, m) (uint32_t)(intptr_t)(&((s *)(0))->m)
 #define BASISU_STRINGIZE(x) #x
 #define BASISU_STRINGIZE2(x) BASISU_STRINGIZE(x)
 
@@ -105,18 +108,17 @@ namespace basisu
 	const char BASISU_PATH_SEPERATOR_CHAR = '/';
 #endif
 
-	typedef basisu::vector<uint8_t> uint8_vec;
-	typedef basisu::vector<int16_t> int16_vec;
-	typedef basisu::vector<uint16_t> uint16_vec;
-	typedef basisu::vector<uint32_t> uint_vec;
-	typedef basisu::vector<uint64_t> uint64_vec;
-	typedef basisu::vector<int> int_vec;
-	typedef basisu::vector<bool> bool_vec;
+	typedef std::vector<uint8_t> uint8_vec;
+	typedef std::vector<int16_t> int16_vec;
+	typedef std::vector<uint16_t> uint16_vec;
+	typedef std::vector<uint32_t> uint_vec;
+	typedef std::vector<uint64_t> uint64_vec;
+	typedef std::vector<int> int_vec;
+	typedef std::vector<bool> bool_vec;
 
 	void enable_debug_printf(bool enabled);
 	void debug_printf(const char *pFmt, ...);
 		
-
 	template <typename T> inline void clear_obj(T& obj) { memset(&obj, 0, sizeof(obj)); }
 
 	template <typename T0, typename T1> inline T0 lerp(T0 a, T0 b, T1 c) { return a + (b - a) * c; }
@@ -154,7 +156,7 @@ namespace basisu
 	inline bool is_pow2(uint32_t x) { return x && ((x & (x - 1U)) == 0U); }
 	inline bool is_pow2(uint64_t x) { return x && ((x & (x - 1U)) == 0U); }
 
-	template<typename T> inline T open_range_check(T v, T minv, T maxv) { assert(v >= minv && v < maxv); BASISU_NOTE_UNUSED(minv); BASISU_NOTE_UNUSED(maxv); return v; }
+	template<typename T> inline T open_range_check(T v, T minv, T maxv) { assert(v >= minv && v < maxv); return v; }
 	template<typename T> inline T open_range_check(T v, T maxv) { assert(v < maxv); BASISU_NOTE_UNUSED(maxv); return v; }
 
 	inline uint32_t total_bits(uint32_t v) { uint32_t l = 0; for ( ; v > 0U; ++l) v >>= 1; return l; }
@@ -256,92 +258,28 @@ namespace basisu
 		if ((ha <= lb) || (la >= hb)) return false;
 		return true;
 	}
-
-	static inline uint32_t read_le_dword(const uint8_t *pBytes)
-	{
-		return (pBytes[3] << 24U) | (pBytes[2] << 16U) | (pBytes[1] << 8U) | (pBytes[0]);
-	}
-
-	static inline void write_le_dword(uint8_t* pBytes, uint32_t val)
-	{
-		pBytes[0] = (uint8_t)val;
-		pBytes[1] = (uint8_t)(val >> 8U);
-		pBytes[2] = (uint8_t)(val >> 16U);
-		pBytes[3] = (uint8_t)(val >> 24U);
-	}
 		
-	// Always little endian 1-8 byte unsigned int
+	// Always little endian 2-4 byte unsigned int
 	template<uint32_t NumBytes>
 	struct packed_uint
 	{
 		uint8_t m_bytes[NumBytes];
 
-		inline packed_uint() { static_assert(NumBytes <= sizeof(uint64_t), "Invalid NumBytes"); }
-		inline packed_uint(uint64_t v) { *this = v; }
+		inline packed_uint() { static_assert(NumBytes <= 4, "NumBytes <= 4"); }
+		inline packed_uint(uint32_t v) { *this = v; }
 		inline packed_uint(const packed_uint& other) { *this = other; }
-						
-		inline packed_uint& operator= (uint64_t v) 
-		{ 
-			for (uint32_t i = 0; i < NumBytes; i++) 
-				m_bytes[i] = static_cast<uint8_t>(v >> (i * 8)); 
-			return *this; 
-		}
 
-		inline packed_uint& operator= (const packed_uint& rhs) 
-		{ 
-			memcpy(m_bytes, rhs.m_bytes, sizeof(m_bytes)); 
-			return *this;
-		}
+		inline packed_uint& operator= (uint32_t v) { for (uint32_t i = 0; i < NumBytes; i++) m_bytes[i] = static_cast<uint8_t>(v >> (i * 8)); return *this; }
+		inline packed_uint& operator= (const packed_uint& rhs) { memcpy(m_bytes, rhs.m_bytes, sizeof(m_bytes)); return *this; }
 
 		inline operator uint32_t() const
 		{
 			switch (NumBytes)
 			{
-				case 1:  
-				{
-					return  m_bytes[0];
-				}
-				case 2:  
-				{
-					return (m_bytes[1] << 8U) | m_bytes[0];
-				}
-				case 3:  
-				{
-					return (m_bytes[2] << 16U) | (m_bytes[1] << 8U) | m_bytes[0];
-				}
-				case 4:  
-				{
-					return read_le_dword(m_bytes);
-				}
-				case 5:
-				{
-					uint32_t l = read_le_dword(m_bytes);
-					uint32_t h = m_bytes[4];
-					return static_cast<uint64_t>(l) | (static_cast<uint64_t>(h) << 32U);
-				}
-				case 6:
-				{
-					uint32_t l = read_le_dword(m_bytes);
-					uint32_t h = (m_bytes[5] << 8U) | m_bytes[4];
-					return static_cast<uint64_t>(l) | (static_cast<uint64_t>(h) << 32U);
-				}
-				case 7:
-				{
-					uint32_t l = read_le_dword(m_bytes);
-					uint32_t h = (m_bytes[6] << 16U) | (m_bytes[5] << 8U) | m_bytes[4];
-					return static_cast<uint64_t>(l) | (static_cast<uint64_t>(h) << 32U);
-				}
-				case 8:  
-				{
-					uint32_t l = read_le_dword(m_bytes);
-					uint32_t h = read_le_dword(m_bytes + 4);
-					return static_cast<uint64_t>(l) | (static_cast<uint64_t>(h) << 32U);
-				}
-				default: 
-				{
-					assert(0);
-					return 0;
-				}
+				case 1:  return  m_bytes[0];
+				case 2:  return (m_bytes[1] << 8U) | m_bytes[0];
+				case 3:  return (m_bytes[2] << 16U) | (m_bytes[1] << 8U) | (m_bytes[0]);
+				default: return (m_bytes[3] << 24U) | (m_bytes[2] << 16U) | (m_bytes[1] << 8U) | (m_bytes[0]);
 			}
 		}
 	};
@@ -355,7 +293,7 @@ namespace basisu
 	enum
 	{
 		cHuffmanMaxSupportedCodeSize = 16, cHuffmanMaxSupportedInternalCodeSize = 31, 
-		cHuffmanFastLookupBits = 10, 
+		cHuffmanFastLookupBits = 10, cHuffmanFastLookupSize = 1 << cHuffmanFastLookupBits,
 		cHuffmanMaxSymsLog2 = 14, cHuffmanMaxSyms = 1 << cHuffmanMaxSymsLog2,
 
 		// Small zero runs
@@ -403,8 +341,6 @@ namespace basisu
 		cETC2_R11_EAC,
 		cETC2_RG11_EAC,
 		cUASTC4x4,		
-		cBC1_NV,
-		cBC1_AMD,
 		
 		// Uncompressed/raw pixels
 		cRGBA32,
@@ -423,8 +359,6 @@ namespace basisu
 		case texture_format::cETC2_RGB:
 		case texture_format::cETC2_ALPHA:
 		case texture_format::cBC1:
-		case texture_format::cBC1_NV:
-		case texture_format::cBC1_AMD:
 		case texture_format::cBC4:
 		case texture_format::cPVRTC1_4_RGB:
 		case texture_format::cPVRTC1_4_RGBA:
