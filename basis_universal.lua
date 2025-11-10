@@ -7,7 +7,8 @@ configuration { "*" }
 uuid "E2587158-A6F8-4BF3-9A7D-9CB1C2F0A5FE"
 
 defines {
-  "BASISU_NO_ITERATOR_DEBUG_LEVEL"
+  "BASISU_NO_ITERATOR_DEBUG_LEVEL",
+  "BASISD_SUPPORT_KTX2_ZSTD=0"
 }
 
 includedirs {
@@ -21,8 +22,6 @@ files {
 
   "transcoder/**.h",
   "transcoder/**.cpp",
-  "zstd/**.h",
-  "zstd/**.c"
 }
 
 excludes {
